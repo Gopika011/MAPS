@@ -1,18 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Google Maps Example</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthcare Management System</title>
+    <style>
+        /* Your existing styles remain unchanged */
+
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+    </style>
 </head>
 <body>
-  <iframe
-    width="600"
-    height="450"
-    style="border:0"
-    loading="lazy"
-    allowfullscreen
-    src="https://www.google.com/maps/embed/v1/place?key=AIzaSyDPWdAqonjOeNGv3HplPpBEkSltrv9xSk4&q=Location">
-  </iframe>
+    <!-- Your existing HTML structure -->
+
+    <script>
+        const map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 5,
+            center: { lat: 37.7749, lng: -122.4194 } // Default center
+        });
+
+        const placesService = new google.maps.places.PlacesService(map);
+
+        document.querySelector('.search-bar').addEventListener('change', function() {
+            const district = this.value;
+            if (district) {
+                // Perform a nearby search for hospitals in the entered district
+                placesService.nearbySearch({
+                    location: map.getCenter(),
+                    radius: 5000,
+                    type: 'hospital',
+                    keyword: district
+                }, function(results, status) {
+                    if (status === google.maps.places.PlacesServiceStatus.OK) {
+                        // Clear existing markers
+                        markers.forEach(marker => marker.setMap(null));
+                        markers = [];
+
+                        // Add markers for each hospital in the district
+                        results.forEach(result => {
+                            const marker = new google.maps.Marker({
+                                position: result.geometry.location,
+                                map,
+                                title: result.name
+                            });
+                            markers.push(marker);
+                        });
+
+                        // Zoom in to fit all markers
+                        const bounds = new google.maps.LatLngBounds();
+                        markers.forEach(marker => bounds.extend(marker.getPosition()));
+                        map.fitBounds(bounds);
+                    }
+                });
+            }
+        });
+
+        let markers = [];
+
+        // Dummy live notifications data
+        const notifications = [
+            "Possible outbreak of flu reported in city A.",
+            "Increase in dengue cases in region B.",
+            "Alert: Cholera outbreak in village C."
+        ];
+
+        // Function to display live notifications
+        function displayNotifications() {
+            const notificationList = document.getElementById('notificationList');
+            notificationList.innerHTML = '';
+            notifications.forEach(notification => {
+                const listItem = document.createElement('li');
+                listItem.textContent = notification;
+                listItem.classList.add('notification-item');
+                notificationList.appendChild(listItem);
+            });
+        }
+
+        // Display live notifications when the page loads
+        window.onload = function() {
+            displayNotifications();
+        };
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDPWdAqonjOeNGv3HplPpBEkSltrv9xSk4&callback=initMap" async defer></script>
 </body>
 </html>
